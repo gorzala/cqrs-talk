@@ -1,0 +1,149 @@
+= CQRS Basics and Caveats
+Marc Gorzala <marc@gorzala.de>
+2020-10-23
+:revnumber: {project-version}
+:example-caption!:
+ifndef::imagesdir[:imagesdir: images]
+ifndef::sourcedir[:sourcedir: ../../main/java]
+
+== Motivation
+
+[%step]
+ * Spliting up a big monolith
+ * Ramification
+ * Unable to cope with scalability issues
+ * Need to scale read and write parts indiviually
+ * Boost time to market
+ * Traceability
+ * Improve Communication between teams
+
+== Caveats
+
+[%step]
+ * Steep Learing Curve
+ * Hard to adapt to new way of thinking
+ * Thinks people got used to must be rethinked
+ * New constraints come up
+ ** Eventual consitency (CQRS does not have to be, but in our case it was)
+ ** Who own a piece of data
+ ** Have to know the business better
+ ** Where forced to know understand the responsibilities better
+
+== Benefits
+
+ * Indiviudal scalability
+ * Optimized Database Design/Usage
+
+== Basic Idea
+foo
+
+[plantuml, rma-use-case-diagram, svg]
+....
+left to right direction
+
+actor developer
+database repo as "central\nrepo"
+agent jenkins as "Jenkins"
+
+rectangle admin as "Gerrit / Gitlab" {
+    agent ui as "front"
+    database repo_local as "local\nrepo"
+}
+
+developer --> ui : push
+ui --> repo_local : push
+ui -left-> jenkins: "\npush "
+ui ..> repo : replication
+....
+
+== flja
+
+[plantuml, rma-sequence-diagram, svg]
+....
+participant User
+User -> A: DoWork
+activate A
+A -> B: << createRequest >>
+activate B
+B -> C: DoWork
+activate C
+C --> B: WorkDone
+destroy C
+B --> A: RequestCreated
+deactivate B
+A -> User: Done
+deactivate A
+....
+
+== Introduction
+
+[%step]
+* This is a user manual for an example project.
+* This project does something.
+* We just haven't decided what that is yet.
+
+== Speaker Notes
+
+Press the `*s*` key to access speaker notes.
+
+[NOTE.speaker]
+--
+You've unlocked the super secret notes area.
+Neat huh?
+--
+
+== Source Code
+
+[source,java]
+.Java code from project
+----
+include::{sourcedir}/example/StringUtils.java[tags=contains,indent=0]
+----
+
+This page was built by the following command:
+
+ $ mvn
+
+== Blank screen
+
+You can press `*b*` or `*.*` to blank your current screen.
+
+Hit it again to bring it back.
+
+== Overview
+
+Press the `*esc*` key to get an overview of your slides.
+
+== Including documents from subdir
+
+.include::subdir/_b.adoc[]
+
+include::subdir/_b.adoc[]
+
+== Images
+
+[.thumb]
+image::sunset.jpg[scaledwidth=75%]
+
+== Images as background
+
+image::sunset.jpg[background, size=cover]
+
+Try setting an animated GIF.
+
+== Attributes
+
+Press the down arrow key to see the next sub-slide.
+
+=== Attributes Part 1
+.Built-in
+asciidoctor-version:: {asciidoctor-version}
+safe-mode-name:: {safe-mode-name}
+docdir:: {docdir}
+docfile:: {docfile}
+imagesdir:: {imagesdir}
+
+=== Attributes Part 2
+.Custom
+project-version:: {project-version}
+sourcedir:: {sourcedir}
