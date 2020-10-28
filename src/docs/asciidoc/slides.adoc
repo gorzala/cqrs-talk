@@ -1,4 +1,4 @@
-= CQRS Basics and Caveats
+= CQRS (mit Eventsourcing) Basics and Caveats
 Marc Gorzala <marc@gorzala.de>
 2020-10-23
 :revnumber: {project-version}
@@ -8,72 +8,43 @@ ifndef::sourcedir[:sourcedir: ../../main/java]
 
 == Motivation
 
+Scope::
+  Überführung eines Monolithen für die Duchführung von Zahlungsdienstleitungen
+  in ein System aus Microservices
+
+Wieso Microservices und CQRS (mit Eventsourc::
 [%step]
- * Spliting up a big monolith
- * Ramification
- * Unable to cope with scalability issues
- * Need to scale read and write parts indiviually
- * Boost time to market
- * Traceability
- * Improve Communication between teams
+ * Weil es cool war (und ist) :-)
+ * Revisionssicherheit
+ * Skalierbarkeit
+ * Unabhängigkeit
+ * Einfacherere Kommunikation zwischen Teams
+ * Time to market
 
 == Caveats
 
 [%step]
- * Steep Learing Curve
- * Hard to adapt to new way of thinking
- * Thinks people got used to must be rethinked
- * New constraints come up
- ** Eventual consitency (CQRS does not have to be, but in our case it was)
- ** Who own a piece of data
- ** Have to know the business better
- ** Where forced to know understand the responsibilities better
+ * steile Lernkurve
+ * scheinbar wiedersprüchliche Konzepte
+ * Probleme kamen auf die überwunden schienen
+ ** Eventual consistency (nicht wirklich an CQRS gebunden )
+ ** Datenownership
+ ** Das Business muss besser verstanden werden (DDD ua.)
 
 == Benefits
 
- * Indiviudal scalability
- * Optimized Database Design/Usage
+ * Skalierbarkeit (insb. Reads und Writes)
+ * Unglaubliche Geschwindigkeit im Zugriff auf Daten (O(1))
+ * Deutlich stärkere Entkopplung mit CQRS
+ ** Änderungen in Fremdsystemen schlugen nicht mehr so durch
+ ** Verfügbarkeiten von Fremdsystemen war nicht mehr so wichtig
+
+
 
 == Basic Idea
-foo
 
-[plantuml, rma-use-case-diagram, svg]
-....
-left to right direction
+image::basics.svg[bla]
 
-actor developer
-database repo as "central\nrepo"
-agent jenkins as "Jenkins"
-
-rectangle admin as "Gerrit / Gitlab" {
-    agent ui as "front"
-    database repo_local as "local\nrepo"
-}
-
-developer --> ui : push
-ui --> repo_local : push
-ui -left-> jenkins: "\npush "
-ui ..> repo : replication
-....
-
-== flja
-
-[plantuml, rma-sequence-diagram, svg]
-....
-participant User
-User -> A: DoWork
-activate A
-A -> B: << createRequest >>
-activate B
-B -> C: DoWork
-activate C
-C --> B: WorkDone
-destroy C
-B --> A: RequestCreated
-deactivate B
-A -> User: Done
-deactivate A
-....
 
 == Introduction
 
