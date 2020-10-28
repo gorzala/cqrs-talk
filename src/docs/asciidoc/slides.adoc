@@ -1,34 +1,37 @@
-= CQRS (mit Eventsourcing) Basics and Caveats
+= CQRS
 Marc Gorzala <marc@gorzala.de>
 2020-10-23
 :revnumber: {project-version}
 :example-caption!:
 ifndef::imagesdir[:imagesdir: images]
 ifndef::sourcedir[:sourcedir: ../../main/java]
+lessons learned
 
-== Motivation
-
+== Ziel
 Scope::
   Überführung eines Monolithen für die Duchführung von Zahlungsdienstleitungen
   in ein System aus Microservices
 
-Wieso Microservices und CQRS (mit Eventsourc::
+Wieso Microservices und CQRS?::
+
 [%step]
  * Weil es cool war (und ist) :-)
  * Revisionssicherheit
  * Skalierbarkeit
  * Unabhängigkeit
- * Einfacherere Kommunikation zwischen Teams
- * Time to market
 
-== Caveats
+== Grundlegende Idee
+
+image::basics.svg[bla]
+
+== Schwierigkeiten
 
 [%step]
  * steile Lernkurve
  * scheinbar wiedersprüchliche Konzepte
  * Probleme kamen auf die überwunden schienen
- ** Eventual consistency (nicht wirklich an CQRS gebunden )
- ** Datenownership
+ ** Eventual consistency (nicht wirklich an CQRS gebunden)
+ ** Datenownership?
  ** Das Business muss besser verstanden werden (DDD ua.)
 
 == Benefits
@@ -36,85 +39,112 @@ Wieso Microservices und CQRS (mit Eventsourc::
  * Skalierbarkeit (insb. Reads und Writes)
  * Unglaubliche Geschwindigkeit im Zugriff auf Daten (O(1))
  * Deutlich stärkere Entkopplung mit CQRS
- ** Änderungen in Fremdsystemen schlugen nicht mehr so durch
- ** Verfügbarkeiten von Fremdsystemen war nicht mehr so wichtig
+ ** unabhängiger von Änderungen im Write Modell
+ ** unabhängiger von Verfügbarkeit des Writers
 
-
-
-== Basic Idea
+== Nochmal die Übersicht
 
 image::basics.svg[bla]
 
+== Weitere Vorteile
+[%step]
+ * Möglichkeit die Daten noch aus anderen Quellen anzureichern
+ * Revisionssicherheit
+ * Einfache Concurrency
 
-== Introduction
+== Schwierigkeiten
+ * Eventually consistency
+ ** Stale Data
+ ** keine Read your own Writes Semantik
+ * Data Ownership (wer ist das führende System?)
+ * Wie implementiere ich wirklich das Eventsourcing?
+
+== Eventsourcing
+
+Eventsourcing und Eventdriven ist nicht das gleiche.
 
 [%step]
-* This is a user manual for an example project.
-* This project does something.
-* We just haven't decided what that is yet.
 
-== Speaker Notes
+image::eventsourcing.svg[Eventsourcing]
 
-Press the `*s*` key to access speaker notes.
+== Vorteile vom Eventsourcing
 
-[NOTE.speaker]
---
-You've unlocked the super secret notes area.
-Neat huh?
---
+[%step]
+ * immer die ganze History verfügbar (revision und so)
+ * verschiedene Sichten aus den gleichen Daten
+ * leichte Anpassung an Änderungen im Upstream
+ * sehr sehr schnelle Views (time/space)
 
-== Source Code
+== Schwierigkeiten Eventsourcing
 
-[source,java]
-.Java code from project
-----
-include::{sourcedir}/example/StringUtils.java[tags=contains,indent=0]
-----
+[%step]
+ * man muss sich mehr Gedanken machen über geplante Suchen
+ * Neues Konzept, wenig know how
+ ** Idempotenz von Events
+ ** Sortierung von Events
+ ** Was gehört alles ins Event
+ ** Umgang mit Fehlern (Rückmeldung)
 
-This page was built by the following command:
+== Eventual Consistency
 
- $ mvn
+Das Problem
 
-== Blank screen
+image::eventual-consistency-problem.svg[]
 
-You can press `*b*` or `*.*` to blank your current screen.
+== Eventuell Consistency
 
-Hit it again to bring it back.
+=== Ein Lösung
+Alle nötigen Informationen ins Event
 
-== Overview
+*Pro*
 
-Press the `*esc*` key to get an overview of your slides.
+ * EC Problem einfach gelöst
+ * Zugriff gespart auf den Read Service
 
-== Including documents from subdir
+*Contra*
 
-.include::subdir/_b.adoc[]
+ * Event ist tailored für den Usecase
+ * Könnte auch ein Datenschutzproblem werden
 
-include::subdir/_b.adoc[]
+== Eventuell Consisteny
+Wir senden Versionsnummern mit.
 
-== Images
+*Pro*
 
-[.thumb]
-image::sunset.jpg[scaledwidth=75%]
+ * Keine möglicherweise unnötigen Informationen im Event
 
-== Images as background
+*Contra*
 
-image::sunset.jpg[background, size=cover]
+ * Clients müssen sich mit der Version rumschlagen
+ * Weiterer Call zum Read Service
+ * Nicht ganz easy in der Umsetzung
 
-Try setting an animated GIF.
+== Zusammenfassung
 
-== Attributes
+Einige Probleme gingen zurück auf mangelnde Erfahrung/Know How
 
-Press the down arrow key to see the next sub-slide.
+* DDD
+* Events
+* Monitoring!!! (Celonis)
+* Business
 
-=== Attributes Part 1
-.Built-in
-asciidoctor-version:: {asciidoctor-version}
-safe-mode-name:: {safe-mode-name}
-docdir:: {docdir}
-docfile:: {docfile}
-imagesdir:: {imagesdir}
+== Zusammenfassung
 
-=== Attributes Part 2
-.Custom
-project-version:: {project-version}
-sourcedir:: {sourcedir}
+Aber es war wohl in Teilen auch keine wirklicher Fit:
+
+* Neues Read-Modell erhöhte Komplexität. Ein auseinander
+  laufen von Read und Write ist manchmal einfach kein Vorteil
+* Vorteile kamen teils nicht wirklich zum Tragen
+
+== Learning
+
+Nutze CQRS nur wenn es passt:
+
+[%step]
+* Wenn Du eh schon eventgetrieben arbeitest
+* Du die individuell Skalierbarkeit wirklich benötigst
+* Du ein Problem damit hast das eine Resource gleichzeitig von vielen geändert wird.
+
+== Danke
+
+= Fragen ???
